@@ -1,19 +1,38 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
 	"os"
-	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world\n")
+type User struct {
+	Name string
+	Age  int
 }
 
 func main() {
-	port, _ := strconv.Atoi(os.Args[1])
-	fmt.Printf("Starting server at Port %d", port)
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+	router := gin.Default()
+
+	router.LoadHTMLGlob("templates/*.html")
+
+	router.GET("/", handler)
+
+	// router.Run(":3000")
+	router.Run(":" + port)
+}
+
+func handler(ctx *gin.Context) {
+
+	user := User{"User", 20}
+
+	ctx.HTML(200, "index.html", gin.H{
+		"user": user,
+	})
 }
